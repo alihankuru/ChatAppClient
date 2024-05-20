@@ -1,4 +1,11 @@
 # ChatAppClient
+ChatHub.Server is a powerful, scalable chat server designed to handle high traffic and provide real-time communication. It is built using modern technologies and offers robust features to support various chat applications.
+
+# ChatAppClient
+![ChatAppClient](https://github.com/alihankuru/ChatHub.Server/blob/master/wwwroot/Images/1.png)
+![ChatAppClient](https://github.com/alihankuru/ChatHub.Server/blob/master/wwwroot/Images/2.png)
+![ChatAppClient](https://github.com/alihankuru/ChatHub.Server/blob/master/wwwroot/Images/3.png)
+![ChatAppClient](https://github.com/alihankuru/ChatHub.Server/blob/master/wwwroot/Images/4.png)
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.2.1.
 
