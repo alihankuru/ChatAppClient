@@ -1,86 +1,96 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { UserModel } from '../models/user.model';
+import { ChatModel } from '../models/chat.model';
+import { HttpClient } from '@angular/common/http';
+import * as signalR from '@microsoft/signalr';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,FormsModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  users = Users;
-  chats = Chats;
-  selectedUserId: string = "1";
-  selectedUser: UserModel = {
-    id: "1",
-    name: "Vincent Porter",
-    status: "left 7 min ago",
-    avatar: "avatar1.png"
-  };
+  users:UserModel[] = [];
+  chats:ChatModel[] = [];
+  selectedUserId: string = "";
+  selectedUser: UserModel = new UserModel();
+  user = new UserModel();
+  hub: signalR.HubConnection | undefined;
+  message: string="";
 
+
+  constructor(
+    private http: HttpClient
+  ){
+    this.user=JSON.parse(localStorage.getItem("accessToken")??"");
+    this.getUsers();
+
+    this.hub=new signalR.HubConnectionBuilder().withUrl("https://localhost:7010/chat-hub").build();
+
+    this.hub.start().then(()=>{
+      console.log("Connection is started...");
+
+      this.hub?.invoke("Connect",this.user.id);
+
+      this.hub?.on("Users",(res:UserModel)=>{
+        console.log(res);
+        this.users.find(p=>p.id==res.id)!.status=res.status;
+      });
+
+      this.hub?.on("Messages",(res:ChatModel)=>{
+        console.log(res);
+        if(this.selectedUserId==res.userId){
+          this.chats.push(res);
+        }
+
+      })
+
+      
+    })
+  }
+
+  getUsers(){
+    this.http.get<UserModel[]>("https://localhost:7010/api/Chats/users").subscribe(res=>{
+      this.users=res.filter(p=>p.id != this.user.id);
+    })
+  }
+
+  logout(){
+    localStorage.clear();
+    document.location.reload();
+  }
 
   changeUser(user: UserModel){
     this.selectedUserId = user.id;
     this.selectedUser = user;
 
-    this.chats = Chats.filter(p=> p.toUserId == user.id && p.userId == "0" || p.userId == user.id && p.toUserId == "0");
+    this.http.get(`https://localhost:7010/api/Chats?userId=${this.user.id}&toUserId=${this.selectedUserId}`).
+    subscribe((res:any)=>{
+      this.chats=res;
+    });
+  }
+
+  sendMessage(){
+    const data={
+      
+        "userId": this.user.id,
+        "toUserId": this.selectedUserId,
+        "message": this.message
+      
+    }
+    this.http.post<ChatModel>("https://localhost:7010/api/Chats",data).subscribe((res)=>{
+    this.chats.push(res);
+    this.message="";
+    });
   }
 
 }
 
-export class UserModel{
-  id:string = "";
-  name: string = "";
-  status: string = "";
-  avatar: string = "";
-}
 
-export const Users: UserModel[] = [
-  {
-    id: "1",
-    name: "Vincent Porter",
-    status: "left 7 min ago",
-    avatar: "avatar1.png"
-  },
-  {
-    id: "2",
-    name: "Aiden Chavez",
-    status: "online",
-    avatar: "avatar3.png"
-  },
-  {
-    id: "3",
-    name: "Christian Kelly",
-    status: "offline since oct 28",
-    avatar: "avatar3.png"
-  }
-]
 
-export class ChatModel{
-  userId: string = "";
-  toUserId: string = "";
-  date: string  ="";
-  message: string = "";
-}
 
-export const Chats: ChatModel[] = [
-  {
-    userId: "0",
-    toUserId: "1",
-    date: new Date().toString(),
-    message: "Hi Aiden, how are you? How is the project coming along?"
-  },
-  {
-    userId: "1",
-    toUserId: "0",
-    date: new Date().toString(),
-    message: "Are we meeting today?"
-  },
-  {
-    userId: "1",
-    toUserId: "0",
-    date: new Date().toString(),
-    message: "Project has been already finished and I have results to show you."
-  }
-]
+

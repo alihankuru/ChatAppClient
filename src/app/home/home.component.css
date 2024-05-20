@@ -176,19 +176,19 @@ body{
     padding: 20px
 }
 
-.online,
-.offline,
+.Çevrimiçi,
+.Çevrimdışı,
 .me {
     margin-right: 2px;
     font-size: 8px;
     vertical-align: middle
 }
 
-.online {
+.Çevrimiçi {
     color: #86c541
 }
 
-.offline {
+.Çevrimdışı {
     color: #e47297
 }
 

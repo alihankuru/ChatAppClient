@@ -34,7 +34,7 @@ export class RegisterComponent {
 
     this.http.post("https://localhost:7010/api/Auth/Register", formData).subscribe(res=> {
       localStorage.setItem("accessToken", JSON.stringify(res));
-      this.router.navigateByUrl("/");
+      this.router.navigateByUrl("/login");
     });
   }
   
